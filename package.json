@@ -1,0 +1,36 @@
+{
+  "name": "blogsite",
+  "version": "1.0.0",
+  "description": "a blog with authentication build with nodejs and react",
+  "main": "server.js",
+  "scripts": {
+    "start": "nodemon server"
+  },
+  "keywords": [
+    "blog",
+    "watacle",
+    "nodejs",
+    "react",
+    "private",
+    "cleopas",
+    "wangayi"
+  ],
+  "author": "cleopas 'watacle' wangayi t.",
+  "license": "MIT",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cloudinary": "^1.21.0",
+    "config": "^3.3.1",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "express-validator": "^6.4.0",
+    "jsonwebtoken": "^8.5.1",
+    "mongoose": "^5.9.7",
+    "multer": "^1.4.2",
+    "multer-storage-cloudinary": "^2.2.1"
+  },
+  "devDependencies": {
+    "colors": "^1.4.0",
+    "nodemon": "^2.0.3"
+  }
+}
