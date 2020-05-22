@@ -15,7 +15,7 @@ const storage = cloudStorage({
     cloudinary,
     folder: 'Bloggie',
     allowedFormats: ['jpg','png'],
-    filename: (req,file,cb)=> cb(undefined,Date.now() + '-avatar')
+    filename:(req,file,cb)=> cb(undefined,Date.now() + '-avatar')
 
 })
 

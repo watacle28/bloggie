@@ -10,6 +10,17 @@ const uploader = require('../utils/upload')
 
 
 //get user info -> private
+router.get('/me', async(req,res)=>{
+    try {
+         //get user
+     const user = await User.findById({_id: req.user.user}).select('-password')
+     .populate('posts')
+     return res.json({user}) 
+    
+    } catch (error) {
+        return res.status(404).json({error: 'user not found'})
+    }
+})
 
 
 //upload profile

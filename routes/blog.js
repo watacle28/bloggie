@@ -2,6 +2,7 @@ const router = require('express').Router();
 const User = require('../models/User');
 const Blog = require('../models/Blog');
 const Comment = require('../models/Comment');
+const canEDITorDEL= require('../middleware/canEditOrDEL')
 
 const {check,validationResult} = require('express-validator');
 //multer configs import
@@ -18,67 +19,113 @@ router.post('/create',[
     //      return res.status(400).json({error: errors.array().map(error =>error.msg)[0]})
     //  }
     
-    
+     
         const blogImage = req.file.url;
-        const {body} = req.body;
+        
+        const {body,title,tags} = req.body;
         try{
      const newPost = await new Blog({
             blogImage,
             body,
+            title,
+            tags,
             author: req.user.user
         }).save();
+    //get user and assign post
+     const user = await User.findById(req.user.user)
+     const posts = user.posts;
+     posts.push(newPost._id)
+      await user.save()
         return res.json({newPost});
     } catch (error) {
-        return res.status(500).json({error})
+        return res.status(404).json({error})
     } 
 })
 
 //edit a blog
-router.put('/edit/:id', async(req,res)=>{
+router.put('/edit/:id',uploader.single('blogImage'),async(req,res)=>{
     //check if user owns the blog
-    const blogsByUser = await User.findById(req.user.user).posts
-    const isOwner = blogsByUser.filter(blog => blog == JSON.stringify(req.params.id));
+    const blogsByUser = await User.findById(req.user.user)
+    
+    const isOwner = blogsByUser.posts.filter(blog => blog == req.params.id);
+
     if(isOwner.length < 1){
         return res.status(401).json({msg: 'sorry you dont own the blog'})
     }
     //user owns post so can edit
-    try {
-        const postToEdit = await Blog.findById(JSON.stringify(req.params.id))
+   try {
+         console.log({edit: req.body});
+
+        const postToEdit = await Blog.findById(req.params.id)
+        console.log({postToEdit});
         if(req.body.body){
+            console.log('body');
             postToEdit.body = req.body.body
         }
-        if(req.file.url){
+        if(req.body.title){
+            console.log('title');
+            postToEdit.title = req.body.title
+        }
+        if(req.body.tags){
+            console.log('tags');
+            postToEdit.title = req.body.title
+        }
+        if(req.file){
+            console.log('file');
             postToEdit.blogImage = req.file.url
         }
-        await postToEdit.save()
+       const edited = await postToEdit.save()
+       console.log({edited});
         return res.json({editedPost: postToEdit})
-
+    
     } catch (error) {
-        return res.status(500).json({error})
+        return res.status(400).json({error})
     }
 })
+//remove post
+router.delete('/post/:id', async(req,res)=>{
+     //check if user owns the blog
+     const blogsByUser = await User.findById(req.user.user)
+    
+     const isOwner = blogsByUser.posts.filter(blog => blog == req.params.id);
+ 
+     if(isOwner.length < 1){
+         return res.status(401).json({msg: 'sorry you dont own the blog'})
+     }
+  try {
+     await Blog.findByIdAndDelete(req.params.id)
+   return res.json({msg:'post deleted'})
+      
+  } catch (error) {
+     return res.status(404).json({err: 'post not found'})
+  }
+
+})
+
 
 //add comment to a post
 router.post('/comment/:id',[
             check('comment','comment can not be empty').trim().not().isEmpty()
         ],async(req,res)=>{
             //return any errors
+            console.log(req.body);
             const errors = validationResult(req);
             if(!errors.isEmpty){
                 return res.status(400).json({error: errors.array().map(err=> err.msg)[0]})
             }
         //add comment
+        const user = await User.findById(req.user.user)
         const newComment = await new Comment({
             body: req.body.comment,
-            owner: req.user.user
+            owner: user
         }).save();
 
        try {
-        const postToComment = await Blog.findById(JSON.stringify(req.params.id));
+        const postToComment = await Blog.findById(req.params.id);
         postToComment.comments.push(newComment._id);
         //save post to db
         await postToComment.save()   
-        return res.json({msg:'comment added',postToComment})
+        return res.json({msg:'comment added',postToComment, newComment})
        } catch (error) {
            return res.status(404).json({error})
        } 
@@ -87,7 +134,7 @@ router.post('/comment/:id',[
 //edit comment
 router.put('/comment/edit/:id',[
     check('comment','please add something or delete comment').trim().not().isEmpty()
-], (req,res)=>{
+], async(req,res)=>{
     const errors = validationResult(reg);
     if(!errors.isEmpty){
       return res.status(400).json({error: errors.array().map(err=>err.msg)[0]})
@@ -133,7 +180,7 @@ router.post('/like/:id',async(req,res)=>{
     //add like
     postTolike.likes.push(req.user.user);
     await postTolike.save();
-    return res.json({msg:'like addded'})
+    return res.json({msg:'like addded',user: req.user.user})
   } catch (error) {
       return res.status(404).json({error: 'post not found',error})
   }
@@ -144,25 +191,69 @@ router.delete('/like/:id',async(req,res)=>{
     //check if user has liked post
    try {
     const postToUnlike = await Blog.findById(req.params.id)
+    
     if(postToUnlike.likes.length < 1){
         return res.status(400).json({error: 'post has no likes'})
     }
-    const userHasLikedPost = postToUnlike.likes.filter(like=> like == req.user.user)
+    
+    const userHasLikedPost = postToUnlike.likes.filter(like => like == req.user.user )
+    
+    
     if(userHasLikedPost.length < 1){
+        return res.status(400).json({error: 'you havent like post yet'})
+    }
+    //go ahead and remove 
+    
+    
+    postToUnlike.likes.pull(req.user.user)
+    await postToUnlike.save();
+  
+    return res.json({msg: 'post unliked'})
+   } catch (error) {
+       
+       return res.status(404).json({error})
+   }
+})
+//like a comment
+ router.post('/comment/like/:id',async(req,res)=>{
+    try {
+         //get comment likes
+     const comment = await Comment.findById(req.params.id).likes;
+     const commentLikes = comment.likes;
+      //check if user already liked comment
+    const userHasLikedComment = commentLikes.filter(like => like == req.user.user)
+    if(userHasLikedComment.length > 0){
+        return res.status(401).json({error: 'you have like comment already'})
+    }
+    //push new like
+    commentLikes.push(req.user.user)
+    await comment.save()
+    return res.json({msg: 'like added to comment'})
+    } catch (error) {
+        return res.status(404).json({err: 'comment not found',error})
+    }
+ })
+
+//remove like on a comment
+router.delete('comment/like/:id',async(req,res)=>{
+    //check if user has liked comment
+   try {
+    const commentToUnlike = await Comment.findById(req.params.id)
+    if(commentToUnlike.likes.length < 1){
+        return res.status(400).json({error: 'comment has no likes'})
+    }
+    const userHasLikedComment = commentToUnlike.likes.filter(like => like == req.user.user)
+    if(userHasLikedComment.length < 1){
         return res.status(401).json({error: 'you havent like post yet'})
     }
     //go ahead and remove like
-    postToUnlike.likes.filter(like => like != req.user.user);
-    await postToUnlike.save();
-    return res.json({msg: 'post unliked'})
+    commentToUnlike.likes.filter(like => like != req.user.user);
+    await commentToUnlike.save();
+    return res.json({msg: 'comment unliked'})
    } catch (error) {
        return res.status(404).json({error: 'post not found'})
    }
 })
-//like a comment
- router.post()
-//remove like on a comment
-
-
+ 
 
 module.exports = router;

@@ -17,8 +17,7 @@ router.post('/register',[
   if(!errors.isEmpty()){
       return res.status(400).json({errors: errors.array().map(error=>error.msg)})
   }
-  //check if username exists
-
+ 
   // hash password
   const hashedPwd = await bcrypt.hash(password,10)
  // create user
@@ -37,10 +36,10 @@ router.post('/register',[
 
  } catch (error) {
         if(error.code == 11000 && error.keyValue.username == username){
-            return res.status(400).json({username: 'username is already in use'})
+            return res.status(400).json({errors: ['username is already in use']})
         }
         if(error.code == 11000 && error.keyValue.email == email){
-            return res.status(400).json({email: 'email is already taken'})
+            return res.status(400).json({errors: ['email is already taken']})
         }
         return res.status(500).json({error})
  }
@@ -60,14 +59,17 @@ router.post('/login',[
      }
      //check user auth details against db
      const user = await User.findOne({email});
+    
      if(!user){
-         return res.status(400).json({error: 'no account associated with the entered email'})
+        
+         return res.status(400).json({errors: ['no account associated with the entered email']})
 
      }
      //check if password is correct
      const isPwd = await bcrypt.compare(password,user.password)
      if(!isPwd){
-         return res.status(400).json({error: 'you entered an incorrect password'})
+         const errors = ['you entered an incorrect password']
+         return res.status(400).json({errors})
      }
      
      //create token 

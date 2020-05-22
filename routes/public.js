@@ -7,7 +7,12 @@ const Comment = require('../models/Comment');
 
 router.get('/blogs', async(req,res)=>{
     try {
-        const blogs = await Blog.find();
+        const blogs = await Blog.find().sort({createdAt: -1})
+        .populate({
+            path: 'comments',
+            populate:{path: 'owner'}
+        })
+        .populate('author');
         return res.json({blogs})
     } catch (error) {
         return res.status(500).json({error})
@@ -18,7 +23,14 @@ router.get('/blogs', async(req,res)=>{
 
 router.get('/blog/:id', async(req,res)=>{
     try {
-        const blog = await Blog.findById({_id: req.params.id})
+        const blog = await Blog.findById({_id:req.params.id})
+        .populate({
+            path: 'comments',
+            populate:{path: 'owner'}
+        })
+        .populate('author');
+        
+        
         return res.json({blog})
     } catch (error) {
         return res.status(404).json({error: `blog not found, ooooopsy ${error}`})
