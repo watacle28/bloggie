@@ -39,10 +39,11 @@ router.get('/blog/:id', async(req,res)=>{
 
 //get all bloggers
 router.get('/bloggers',async(req,res)=>{
-    const _id = req.user.user;
+
     try {
-         const user = await User.findById({_id});
-        return res.json({user})
+         const users = await User.find().select('-password')
+
+        return res.json({users})
     } catch (error) {
         return res.status(401).json({error})
     }
@@ -53,7 +54,9 @@ router.get('/bloggers',async(req,res)=>{
 
 router.get('/blogger/:id', async(req,res)=>{
     try {
-        const blogger = await User.findById({_id: req.params.id})
+        const blogger =  await User.findById({_id: req.params.id}).select('-password')
+            .populate('posts')
+        console.log({blogger});
         return res.json({blogger})
     } catch (error) {
         return res.status(404).json({error: `blogger not found, ooooopsy ${error}`})

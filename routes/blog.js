@@ -208,7 +208,7 @@ router.delete('/like/:id',async(req,res)=>{
     postToUnlike.likes.pull(req.user.user)
     await postToUnlike.save();
   
-    return res.json({msg: 'post unliked'})
+    return res.json({msg: 'post unliked', user: req.user.user})
    } catch (error) {
        
        return res.status(404).json({error})
@@ -255,5 +255,8 @@ router.delete('comment/like/:id',async(req,res)=>{
    }
 })
  
+// router.edit('comment/edit/:id', async (req,res)=>{
+    
+// })
 
 module.exports = router;
