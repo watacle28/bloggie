@@ -38,6 +38,36 @@ router.post('/upload',uploader.single('avatar'), async(req,res)=>{
     }
 })
 
+//edit own profile
+router.put('/me', uploader.single('avatar'),async(req,res)=>{
+    const user = await User.findById(req.user.user)
+    const {fullname,bio,role,socialLinks} = req.body
+
+    if(!user) return
+
+    //construct profile object
+    //let profile = {}
+    //let socials = []
+    fullname ? user.fullname = fullname : user.fullname;
+    bio ? user.bio = bio : user.bio,
+    role ? user.role = role : user.bio,
+    req.file.url ? user.avatar = req.file.url : user.avatar
+    socialLinks && socialLinks.length > 0 ? user.socialLinks = socialLinks : user.socialLinks
+
+    await user.save()
+    return res.json({user})
+
+})
+
+router.delete('/me', async(req,res)=>{
+    try {
+        await Comment.deleteMany({owner: req.user.user});
+        await User.findByIdAndDelete(req.user.user)
+        res.json({msg:'Life is better inside but take care for now, ciao'})
+    } catch (error) {
+        return res.json({error})
+    }
+})
 
 
 

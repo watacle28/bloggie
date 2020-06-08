@@ -13,6 +13,7 @@ router.get('/blogs', async(req,res)=>{
             populate:{path: 'owner'}
         })
         .populate('author');
+       
         return res.json({blogs})
     } catch (error) {
         return res.status(500).json({error})
@@ -30,7 +31,7 @@ router.get('/blog/:id', async(req,res)=>{
         })
         .populate('author');
         
-        
+    
         return res.json({blog})
     } catch (error) {
         return res.status(404).json({error: `blog not found, ooooopsy ${error}`})
