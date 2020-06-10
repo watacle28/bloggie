@@ -8,7 +8,13 @@ const UserSchema = Schema({
     email : {type: String, unique: true},
     bio: String,
     location: String,
-    socialLinks: [String],
+    socialLinks: {
+        fb: String,
+        tw: String,
+        insta: String,
+        linkedIn: String,
+        other: String
+    },
     avatar: String,
     password: String,
     posts: [{type: Schema.Types.ObjectId, ref: 'Blog'}],

@@ -21,21 +21,25 @@ router.post('/create', [
     //  if(!errors.isEmpty()){
     //      return res.status(400).json({error: errors.array().map(error =>error.msg)[0]})
     //  }
-
-
-    const blogImage = req.file.url;
-
+    let blogImage;
+    if(req.file){
+        
+     blogImage = req.file.url;
+  
+    }
     const {
         body,
         title,
         tags
     } = req.body;
+    let tagArray = tags.trim().split(',') 
+
     try {
         const newPost = await new Blog({
             blogImage,
             body,
             title,
-            tags,
+            tags : tagArray,
             author: req.user.user
         }).save();
         //get user and assign post
@@ -43,9 +47,11 @@ router.post('/create', [
         const posts = user.posts;
         posts.push(newPost._id)
         await user.save()
+        console.log({newPost});
         return res.json({
             newPost
         });
+        
     } catch (error) {
         return res.status(404).json({
             error
@@ -67,34 +73,29 @@ router.put('/edit/:id', uploader.single('blogImage'), async (req, res) => {
     }
     //user owns post so can edit
     try {
-        console.log({
-            edit: req.body
-        });
+        
 
         const postToEdit = await Blog.findById(req.params.id)
-        console.log({
-            postToEdit
-        });
+       
         if (req.body.body) {
-            console.log('body');
+         
             postToEdit.body = req.body.body
         }
         if (req.body.title) {
-            console.log('title');
+           
             postToEdit.title = req.body.title
         }
         if (req.body.tags) {
-            console.log('tags');
-            postToEdit.title = req.body.title
+           let tagArray = req.body.tags.trim().split(',')
+            postToEdit.tags = tagArray
         }
         if (req.file) {
-            console.log('file');
+           
             postToEdit.blogImage = req.file.url
         }
-        const edited = await postToEdit.save()
-        console.log({
-            edited
-        });
+        
+         await postToEdit.save()
+        
         return res.json({
             editedPost: postToEdit
         })

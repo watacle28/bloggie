@@ -3,6 +3,7 @@ const User = require('../models/User')
 const {check, validationResult} = require('express-validator')
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs')
+const axios = require('axios')
 
 //register user public
 router.post('/register',[
@@ -17,7 +18,9 @@ router.post('/register',[
   if(!errors.isEmpty()){
       return res.status(400).json({errors: errors.array().map(error=>error.msg)})
   }
- 
+ //get user location
+ const location =  await axios.get('https://ipapi.co/json/');
+
   // hash password
   const hashedPwd = await bcrypt.hash(password,10)
  // create user
@@ -25,7 +28,19 @@ router.post('/register',[
      const newUser = await new User({
          username,
          email,
-         password: hashedPwd
+         password: hashedPwd,
+         bio: '',
+         socialLinks:{
+             fb:'',
+             tw: '',
+             insta: '',
+             linkedIn: '',
+             other: ''
+         },
+        location : location.data.country_name,
+        role: '',
+        fullname: '',
+        avatar: ''
      }).save()
  
      //create token for new user

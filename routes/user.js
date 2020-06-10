@@ -1,4 +1,5 @@
 const router = require('express').Router();
+const axios = require('axios');
 const User = require('../models/User');
 const Blog = require('../models/Blog');
 const Comment = require('../models/Comment');
@@ -11,6 +12,8 @@ const uploader = require('../utils/upload')
 
 //get user info -> private
 router.get('/me', async(req,res)=>{
+    const country = await axios.get('https://ipapi.co/json/')
+    console.log({country});
     try {
          //get user
      const user = await User.findById({_id: req.user.user}).select('-password')
@@ -40,19 +43,27 @@ router.post('/upload',uploader.single('avatar'), async(req,res)=>{
 
 //edit own profile
 router.put('/me', uploader.single('avatar'),async(req,res)=>{
+    console.log({data:req.body});
+    console.log({file: req});
     const user = await User.findById(req.user.user)
-    const {fullname,bio,role,socialLinks} = req.body
+    const {fullname,bio,role,location,socialLinks:{fb,tw,insta,linkedIn,other}} = req.body
+  
 
     if(!user) return
 
-    //construct profile object
-    //let profile = {}
-    //let socials = []
-    fullname ? user.fullname = fullname : user.fullname;
-    bio ? user.bio = bio : user.bio,
-    role ? user.role = role : user.bio,
-    req.file.url ? user.avatar = req.file.url : user.avatar
-    socialLinks && socialLinks.length > 0 ? user.socialLinks = socialLinks : user.socialLinks
+    let socialLinks = {}
+    fullname ? user.fullname = fullname : ''
+    bio ? user.bio = bio : '';
+    role ? user.role = role : '';
+    req.file && req.file.url ? user.avatar = req.file.url : ''
+    location ? user.location = location : '';
+    fb ? socialLinks.fb = fb : null
+    tw ? socialLinks.tw = tw : null
+    insta ? socialLinks.insta = insta : null
+    linkedIn ? socialLinks.linkedIn = linkedIn : null
+    other ? socialLinks.other = linkedIn : null
+    
+    user.socialLinks = socialLinks;
 
     await user.save()
     return res.json({user})
