@@ -2,7 +2,7 @@ const router = require('express').Router();
 const User = require('../models/User');
 const Blog = require('../models/Blog');
 const Comment = require('../models/Comment');
-
+const uploader = require('../utils/upload')
 //get all blogs
 
 router.get('/blogs', async(req,res)=>{
@@ -56,12 +56,26 @@ router.get('/bloggers',async(req,res)=>{
 router.get('/blogger/:id', async(req,res)=>{
     try {
         const blogger =  await User.findById({_id: req.params.id}).select('-password')
-            .populate('posts')
-        console.log({blogger});
+            .populate(
+                {
+                    path: 'posts',
+                    options:{
+                        sort:{
+                            createdAt:-1
+                        }
+                    }
+                }
+            )
+     
         return res.json({blogger})
     } catch (error) {
         return res.status(404).json({error: `blogger not found, ooooopsy ${error}`})
     }
+})
+
+router.post('/upload',uploader.single('avatar'), async(req,res)=>{
+    console.log({req: req.file})
+    res.json(req.file.url)
 })
 
 module.exports =router;

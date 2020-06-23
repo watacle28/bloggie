@@ -13,7 +13,7 @@ const uploader = require('../utils/upload')
 //get user info -> private
 router.get('/me', async(req,res)=>{
     const country = await axios.get('https://ipapi.co/json/')
-    console.log({country});
+  
     try {
          //get user
      const user = await User.findById({_id: req.user.user}).select('-password')
@@ -28,17 +28,18 @@ router.get('/me', async(req,res)=>{
 
 //upload profile
 router.post('/upload',uploader.single('avatar'), async(req,res)=>{
-    //get user
-    const user = await User.findById({_id: req.user.user})
+    console.log({req});
+    // //get user
+    // const user = await User.findById({_id: req.user.user})
 
-    //upload avatar
-    try {
-        user.avatar = req.file.url;
-        const userWithAvatar = await user.save();
-        return res.json({user: userWithAvatar})
-    } catch (error) {
-        return res.status(400).json({error})
-    }
+    // //upload avatar
+    // try {
+    //     user.avatar = req.file.url;
+    //     const userWithAvatar = await user.save();
+    //     return res.json({user: userWithAvatar})
+    // } catch (error) {
+    //     return res.status(400).json({error})
+    // }
 })
 
 //edit own profile
