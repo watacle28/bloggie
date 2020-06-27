@@ -1,14 +1,24 @@
-const User = require('../models/User')
 
-const canEDITorDEL = async(req,res,next)=>{
-     //check if user owns the blog
-     const User = await User.findById(req.user.user)
-    
-     const isOwner = User.posts.filter(blog => blog === req.params.id);
- 
-     if(isOwner.length < 1){
-         return res.status(401).json({msg: 'sorry you dont own the blog'})
-     }
-     next()
+
+const canEDITorDEL = (model)=>{
+    return async(req,res,next)=>{
+        //current user 
+        const user = req.user.user;
+
+        //doc owner
+        const doc = await model.findById(req.params.id)
+        if(doc.addedBy !== user){
+            return res.status(400).json({msg: 'not allowed'})
+        }
+       try {
+            res.doc = doc;
+            
+            next()
+       } catch (error) {
+           console.log({error});
+       }
+    }
 }
+     
+
 module.exports = canEDITorDEL

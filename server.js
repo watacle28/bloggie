@@ -19,12 +19,14 @@ const auth = require('./routes/auth')
 const user = require('./routes/user')
 const public = require('./routes/public')
 const blog = require('./routes/blog')
+const resources = require('./routes/resources')
 //middleware inits
 
 app.use('/api/auth',auth);
 app.use('/api/user',checkAuth,user);
 app.use('/api/public',public);
 app.use('/api/blog',checkAuth,blog)
+app.use('/api/external', checkAuth,resources)
 // app and db connect
 
 mongoose.connect(process.env.MONGOURI,{useCreateIndex: true,useNewUrlParser: true,useUnifiedTopology: true})

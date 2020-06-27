@@ -15,14 +15,7 @@ const uploader = require('../utils/upload');
 router.post('/create', [
     check(`${JSON.stringify('body')}`, 'body of blog cant be empty , you must write something ').not().isEmpty()
 ], async (req, res) => {
-    //return error if body is empty
-    // const errors = validationResult(req);
-    //res.json(errors.array().map(err=>err.msg));
-    //  if(!errors.isEmpty()){
-    //      return res.status(400).json({error: errors.array().map(error =>error.msg)[0]})
-    //  }
-  
-  
+   
     const {
         body,
         title,
