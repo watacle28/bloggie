@@ -5,8 +5,13 @@ const Course = require('../models/Course')
 const Twitter = require('../models/Twitter')
 const {check, validationResult} = require('express-validator')
 const canEditOrDel = require('../middleware/canEditOrDEL')
+const User = require('../models/User')
 
-
+    const getUsername = async(id)=>{
+        const user = await User.findById(id)
+        return  user.username
+    
+        }
 //add a Resource
 
 router.post('/resource',    
@@ -19,7 +24,7 @@ router.post('/resource',
                         return res.status(400).json({errors: errors.array().map(error=>error.msg)})
                     }
                     const {name,link, type} = req.body;
-                    const addedBy = req.user.user
+                    const addedBy = getUsername(req.user.user)
                     const newResource = new Resource({
                         name,link,type,addedBy
                     })
@@ -60,15 +65,7 @@ router.delete('/resource/:id',canEditOrDel(Resource), async(req,res)=>{
           }
 })
 
-//get all resources
-router.get('/resources', async(req,res)=>{
-            try {
-                const resources = await Resource.find();
-            return  res.status(200).json({resources})
-            } catch (error) {
-                console.log({error});
-            }
-})
+
 
 //add Channel
 
@@ -82,7 +79,7 @@ router.post('/channel', [
                         return res.status(400).json({errors: errors.array().map(error=>error.msg)})
                     }
                  const {name,link,platform}  = req.body;
-                 const addedBy = req.user.user 
+                 const addedBy = getUsername(req.user.user)
                  const newChannel = new Channel({name,link,platform,addedBy})
                  try {
                      const channel = await newChannel.save();
@@ -132,7 +129,7 @@ router.post('/course', [
             }
          const {name,link,price,duration}  = req.body;
 
-         const addedBy = req.user.user 
+         const addedBy = getUsername(req.user.user)
          const newCourse = new Channel({name,link,addedBy})
          price ? newCourse.price = price : null
          duration ? newCourse.duration = duration : null
@@ -181,7 +178,7 @@ router.post('/twitter',[check('username','username required').not().isEmpty()],a
         return res.status(400).json({errors: errors.array().map(error=>error.msg)})
     }
     const {username} = req.body;
-    const addedBy = req.user.user;
+    const addedBy = await getUsername(req.user.user)
 
     const newTwiAcc = new Twitter({username,addedBy})
     try {
@@ -207,12 +204,12 @@ router.put('/twitter/:id',canEditOrDel(Twitter), async(req,res)=>{
 
 //delete twitter acc
 router.delete('/twitter/:id',canEditOrDel(Twitter), async(req,res)=>{
-    const twitter = res.doc;
-    try {
-        await twitter.remove()
-        return res.json({msg: 'removed'})
-    } catch (error) {
-        console.log({error});
-}
+        const twitter = res.doc;
+        try {
+            await twitter.remove()
+            return res.json({msg: 'removed'})
+        } catch (error) {
+            console.log({error});
+    }
 })
 module.exports = router;

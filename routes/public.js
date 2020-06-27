@@ -2,7 +2,11 @@ const router = require('express').Router();
 const User = require('../models/User');
 const Blog = require('../models/Blog');
 const Comment = require('../models/Comment');
-const uploader = require('../utils/upload')
+const uploader = require('../utils/upload');
+const Course = require('../models/Course');
+const Resource = require('../models/Resource');
+const Twitter = require('../models/Twitter');
+const Channel = require('../models/Channel');
 //get all blogs
 
 router.get('/blogs', async(req,res)=>{
@@ -78,4 +82,43 @@ router.post('/upload',uploader.single('avatar'), async(req,res)=>{
     res.json(req.file.url)
 })
 
-module.exports =router;
+//get all resources
+router.get('/resources', async(req,res)=>{
+    try {
+        const resources = await Resource.find();
+    return  res.status(200).json({resources})
+    } catch (error) {
+        console.log({error});
+    }
+})
+
+//get all courses
+router.get('/courses', async(req,res)=>{
+    try {
+        const courses = await Course.find();
+    return  res.status(200).json({courses})
+    } catch (error) {
+        console.log({error});
+    }
+})
+
+//get all twitter accs
+router.get('/twitters', async(req,res)=>{
+    try {
+        const twitters = await Twitter.find();
+    return  res.status(200).json({twitters})
+    } catch (error) {
+        console.log({error});
+    }
+})
+
+//get all channels
+router.get('/channels', async(req,res)=>{
+    try {
+        const channels = await Channel.find();
+    return  res.status(200).json({channels})
+    } catch (error) {
+        console.log({error});
+    }
+})
+module.exports = router;
