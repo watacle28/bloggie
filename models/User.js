@@ -20,6 +20,6 @@ const UserSchema = Schema({
     posts: [{type: Schema.Types.ObjectId, ref: 'Blog'}],
     favs: [{type: Schema.Types.ObjectId, ref: 'Blog'}],
 
-})
+},{timestamps: true})
 
 module.exports = model('User',UserSchema);

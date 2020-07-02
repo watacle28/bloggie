@@ -24,7 +24,7 @@ router.post('/resource',
                         return res.status(400).json({errors: errors.array().map(error=>error.msg)})
                     }
                     const {name,link, type} = req.body;
-                    const addedBy = getUsername(req.user.user)
+                    const addedBy =await getUsername(req.user.user)
                     const newResource = new Resource({
                         name,link,type,addedBy
                     })
@@ -79,7 +79,7 @@ router.post('/channel', [
                         return res.status(400).json({errors: errors.array().map(error=>error.msg)})
                     }
                  const {name,link,platform}  = req.body;
-                 const addedBy = getUsername(req.user.user)
+                 const addedBy = await getUsername(req.user.user)
                  const newChannel = new Channel({name,link,platform,addedBy})
                  try {
                      const channel = await newChannel.save();
@@ -129,7 +129,7 @@ router.post('/course', [
             }
          const {name,link,price,duration}  = req.body;
 
-         const addedBy = getUsername(req.user.user)
+         const addedBy =await getUsername(req.user.user)
          const newCourse = new Channel({name,link,addedBy})
          price ? newCourse.price = price : null
          duration ? newCourse.duration = duration : null
@@ -172,7 +172,7 @@ router.post('/course', [
         })
 
 //add Twitter acc to follow
-router.post('/twitter',[check('username','username required').not().isEmpty()],async(req,res)=>{
+router.post('/twitacc',[check('username','username required').not().isEmpty()],async(req,res)=>{
     const errors = validationResult(req)
     if(!errors.isEmpty()){
         return res.status(400).json({errors: errors.array().map(error=>error.msg)})
@@ -182,15 +182,15 @@ router.post('/twitter',[check('username','username required').not().isEmpty()],a
 
     const newTwiAcc = new Twitter({username,addedBy})
     try {
-        const twitter = await newTwiAcc.save()
-        return res.json({twitter})
+        const twitacc = await newTwiAcc.save()
+        return res.json({twitacc})
     } catch (error) {
         console.log({error});
     }
 })
 
 //edit Twitter acc
-router.put('/twitter/:id',canEditOrDel(Twitter), async(req,res)=>{
+router.put('/twitacc/:id',canEditOrDel(Twitter), async(req,res)=>{
         const {username} = req.body;
         const twitter = res.doc;
         username ? twitter.username = username : null
@@ -203,7 +203,7 @@ router.put('/twitter/:id',canEditOrDel(Twitter), async(req,res)=>{
 })
 
 //delete twitter acc
-router.delete('/twitter/:id',canEditOrDel(Twitter), async(req,res)=>{
+router.delete('/twitacc/:id',canEditOrDel(Twitter), async(req,res)=>{
         const twitter = res.doc;
         try {
             await twitter.remove()

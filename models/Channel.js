@@ -5,6 +5,6 @@ const ChannelSchema = Schema({
     platform:{type: String, enum:['Youtube', 'Twitch'], required: true},
     link: {type: String, required: true},
     addedBy: String
-})
+},{timestamps: true})
 
 module.exports = model('Channel',ChannelSchema)

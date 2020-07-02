@@ -6,7 +6,7 @@ const CourseSchema = Schema({
     price: Number,
     duration: Number,
     addedBy: String
-})
+},{timestamps: true})
 
 
 module.exports = model('Course', CourseSchema)
