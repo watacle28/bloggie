@@ -19,6 +19,8 @@ const UserSchema = Schema({
     password: String,
     posts: [{type: Schema.Types.ObjectId, ref: 'Blog'}],
     favs: [{type: Schema.Types.ObjectId, ref: 'Blog'}],
+    resetToken: String,
+    resetTokenExpiry:Date
 
 },{timestamps: true})
 

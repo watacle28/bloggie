@@ -130,7 +130,7 @@ router.post('/course', [
          const {name,link,price,duration}  = req.body;
 
          const addedBy =await getUsername(req.user.user)
-         const newCourse = new Channel({name,link,addedBy})
+         const newCourse = new Course({name,link,addedBy})
          price ? newCourse.price = price : null
          duration ? newCourse.duration = duration : null
          try {

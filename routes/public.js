@@ -1,4 +1,10 @@
 const router = require('express').Router();
+//nodemailer staff & reset staff
+const { promisify } = require ('util');
+const { randomBytes } = require ('crypto');
+const { transport, emailTemplate } = require ('../utils/nodemailer');
+const bcrypt = require('bcryptjs')
+//models
 const User = require('../models/User');
 const Blog = require('../models/Blog');
 const Comment = require('../models/Comment');
@@ -7,11 +13,20 @@ const Course = require('../models/Course');
 const Resource = require('../models/Resource');
 const Twitter = require('../models/Twitter');
 const Channel = require('../models/Channel');
+
+const paginatedResults = require('../middleware/pagination')
 //get all blogs
 
-router.get('/blogs', async(req,res)=>{
+router.get('/blogs', paginatedResults(Blog), async(req,res)=>{
+  
+       
+        return res.json(res.paginatedResults)
+   
+})
+//get blog psots by tag
+router.get('/blogs/:tag', async(req,res)=>{
     try {
-        const blogs = await Blog.find().sort({createdAt: -1})
+        const blogs = await Blog.find({'tags': {$in :[req.params.tag]}}).sort({createdAt: -1})
         .populate({
             path: 'comments',
             populate:{path: 'owner'}
@@ -23,7 +38,6 @@ router.get('/blogs', async(req,res)=>{
         return res.status(500).json({error})
     }
 })
-
 //get specific blog
 
 router.get('/blog/:id', async(req,res)=>{
@@ -120,5 +134,68 @@ router.get('/channels', async(req,res)=>{
     } catch (error) {
         console.log({error});
     }
+})
+
+router.post('/forgotPassword',async(req,res)=>{
+  // 1. Check if this is a real user
+  const user = await User.findOne({email: req.body.email})
+  if (!user) {
+  res.status(404).json(`No user has ${req.body.email} as their email`);
+  }
+  // 2. Set a reset token and expiry on that user
+  const resetToken = (await promisify(randomBytes)(20)).toString('hex');
+  const resetTokenExpiry = new Date(Date.now() + 3600000); // 1 hour from now
+  //update user
+  user.resetToken = resetToken;
+  user.resetTokenExpiry = resetTokenExpiry;
+ const updatedUser = await user.save();
+
+  // 3. Email them that reset token
+  const mailRes = await transport.sendMail({
+    from: 'sirwatacle@gmail.com',
+    to: user.email,
+    subject: 'Password Reset Token',
+    html: emailTemplate(`Your Password Reset Token is here!
+      \n\n
+      <a href="http://localhost:3006/resetPassword?resetToken=${resetToken}">Click Here to Reset Your Password</a>`),
+  });
+
+  // 4. Return the message
+  return res.json({ message: 'Check your email for your password reset link' });
+})
+
+router.post('/resetPassword',async(req,res)=>{
+       
+        // 1. check if its a legit reset token
+       
+        const user = await User.findOne({resetToken: req.body.resetToken})
+      
+        if (!user) {
+         return res.status(400).json(`Your token is invalid`)
+        }
+        // 3. Check if its expired
+       
+        const now = Date.now();
+        const expiry = new Date(user.resetTokenExpiry).getTime();
+        if (now - expiry > 3600000) {
+           return res.status(400).json(`Your token has expired`)
+        }
+        // 4.hash & Save the new password to the user and remove old resetToken fields
+       
+        // hash password
+        const hashedPwd = await bcrypt.hash(req.body.password,10)
+
+        user.password = hashedPwd;
+        user.resetToken = '';
+        user.resetTokenExpiry = null;
+       try {
+        const updatedUser = await user.save()
+        return res.json({msg: 'your password has been updated'})
+       } catch (error) {
+           return res.status(500).json({error: 'an error occured'})
+       }
+       
+        
+      
 })
 module.exports = router;

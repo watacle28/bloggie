@@ -21,8 +21,8 @@ router.post('/create', [
         title,
         tags
     } = req.body;
-    let tagArray = tags.trim().split(',') 
-
+    let tagsRaw = tags.trim().split(',') 
+     let tagArray = tagsRaw.map(tag => tag.trim())
     try {
         const newPost = await new Blog({
         

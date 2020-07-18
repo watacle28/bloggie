@@ -29,7 +29,8 @@
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.9.7",
     "multer": "^1.4.2",
-    "multer-storage-cloudinary": "^2.2.1"
+    "multer-storage-cloudinary": "^2.2.1",
+    "nodemailer": "^6.4.10"
   },
   "devDependencies": {
     "colors": "^1.4.0",
