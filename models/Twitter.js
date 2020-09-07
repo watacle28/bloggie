@@ -2,7 +2,8 @@ const {Schema,model} = require('mongoose');
 
 const TwitterSchema = Schema({
     username: {type: String, required: true},
-    addedBy: String
+    addedBy: String,
+    upvotes: [{type: Schema.Types.ObjectId, ref: 'User'}]
 },{timestamps: true})
 
 

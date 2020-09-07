@@ -21,8 +21,8 @@ router.post('/create', [
         title,
         tags
     } = req.body;
-    let tagsRaw = tags.trim().split(',') 
-     let tagArray = tagsRaw.map(tag => tag.trim())
+    let tagArray= tags.trim().split(',').map(tag => tag.trim())
+    
     try {
         const newPost = await new Blog({
         
@@ -78,10 +78,10 @@ router.put('/edit/:id', async (req, res) => {
            
         }
         if (req.body.tags) {
-            console.log(req.body.tags);
-        //    let tagArray = req.body.tags.trim().split(',')
-        //     postToEdit.tags = tagArray
-        //     console.log('3');
+            
+           let tagArray = req.body.tags.trim().split(',').map(tag => tag.trim())
+            postToEdit.tags = tagArray
+          
         }
       
         

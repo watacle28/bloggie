@@ -44,12 +44,11 @@ router.post('/upload',uploader.single('avatar'), async(req,res)=>{
 
 //edit own profile
 router.put('/me', uploader.single('avatar'),async(req,res)=>{
-    console.log({data:req.body});
-    console.log({file: req});
+   
     const user = await User.findById(req.user.user)
-    const {fullname,bio,role,location,socialLinks:{fb,tw,insta,linkedIn,other}} = req.body
+    const {fullname,bio,role,location,fb,tw,insta,linkedIn,other} = req.body
   
-
+  
     if(!user) return
 
     let socialLinks = {}
@@ -67,6 +66,7 @@ router.put('/me', uploader.single('avatar'),async(req,res)=>{
     user.socialLinks = socialLinks;
 
     await user.save()
+    console.log({user});
     return res.json({user})
 
 })

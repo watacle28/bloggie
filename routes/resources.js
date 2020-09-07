@@ -6,6 +6,7 @@ const Twitter = require('../models/Twitter')
 const {check, validationResult} = require('express-validator')
 const canEditOrDel = require('../middleware/canEditOrDEL')
 const User = require('../models/User')
+const canVote = require('../middleware/canVote')
 
     const getUsername = async(id)=>{
         const user = await User.findById(id)
@@ -212,4 +213,22 @@ router.delete('/twitacc/:id',canEditOrDel(Twitter), async(req,res)=>{
             console.log({error});
     }
 })
+//upvote handler
+const upVoteHandler = async(req,res)=>{
+    try {
+      const response =  await res.doc.save();
+        return res.json({response})
+   
+        
+    } catch (error) {
+        return res.json({erorr})
+    }
+}
+//vote
+router.post('/twitacc/upvote/:id', canVote(Twitter),upVoteHandler )
+router.post('/course/upvote/:id', canVote(Course),upVoteHandler )
+router.post('/resource/upvote/:id', canVote(Resource),upVoteHandler )
+router.post('/channel/upvote/:id', canVote(Channel),upVoteHandler )
+
+router.post('/course/upvote/:id')
 module.exports = router;
